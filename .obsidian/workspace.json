@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "40_Management/Meetings/Meetings.md",
+                "file": "10_Raw_Research/Dilara/Desktop App.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Meetings"
+              "title": "Desktop App"
             }
           }
         ],
@@ -211,23 +211,24 @@
   },
   "active": "827c448526d8296e",
   "lastOpenFiles": [
+    "10_Raw_Research/Dilara/Dilara.md",
+    "10_Raw_Research/Dilara/Desktop App.md",
+    "20_Knowledge_Base/Architecture/Classification/Classification.md",
+    "20_Knowledge_Base/Desktop_App/Desktop_App.md",
+    "40_Management/Meetings/Meetings.md",
     "40_Management/Management.md",
     "20_Knowledge_Base/Architecture/Architecture.md",
     "Tumor-Segmentation-grad-proj-notes",
     "10_Raw_Research/Abdelrahman/Abdelrahman.md",
-    "10_Raw_Research/Dilara/Dilara.md",
     "20_Knowledge_Base/Knowledge_Base.md",
     "10_Raw_Research/Raw_Research.md",
     "10_Raw_Research/Steakzz/Untitled.md",
     "Note_Template.md",
-    "40_Management/Meetings/Meetings.md",
     "30_Lab/Canvases/Canvases.md",
     "30_Lab/Architecture_Decisions/Architecture_Decisions.md",
     "30_Lab/Brainstorm/Brainstorm.md",
     "30_Lab/Lab.md",
-    "20_Knowledge_Base/Desktop_App/Desktop_App.md",
     "20_Knowledge_Base/Architecture/Explainability/Explainability.md",
-    "20_Knowledge_Base/Architecture/Classification/Classification.md",
     "20_Knowledge_Base/Architecture/Segmentation/Segmentation.md",
     "20_Knowledge_Base/Data_Pipeline/Data_Pipeline.md",
     "20_Knowledge_Base/Clinical/Clinical.md",
