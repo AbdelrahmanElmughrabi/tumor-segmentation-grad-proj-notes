@@ -4,12 +4,14 @@ type: nexus
 
 # Knowledge Base
 
-Promoted, agreed-upon knowledge only. Every note here has been verified by both teammates during a sync session.
-
 Parent: [[Project_MOC]]
 
 ## Domains
-- [[Clinical]] — Medical context, MRI/CT physics, tumor types
-- [[Data_Pipeline]] — BraTS dataset, DICOM/NIfTI, preprocessing
-- [[Architecture]] — Model design, U-Net, segmentation, classification, explainability
+- [[Breast_Tumor]] — All breast tumor related research, 2D and 3D
+- [[Clinical]] — Medical context, imaging physics, tumor types
+- [[Data_Pipeline]] — Preprocessing, formats, dataset handling
+- [[Architecture]] — Model design, segmentation, classification, explainability
 - [[Desktop_App]] — UI/UX design and framework decisions
+- [[Gaps]] — Known unknowns and open research questions
+- [[Open_Sourced_Literature_Map]] — Index of all open source projects used
+- [[Open_Sourced_Sources]] — Master credits and citations

@@ -4,14 +4,17 @@ type: nexus
 
 # Architecture
 
-Model design decisions and research for the full pipeline.
-
 Parent: [[Knowledge_Base]]
 
 ## Sub-sections
-- [[Segmentation]] — U-Net and segmentation approaches
-- [[Classification]] — Benign/malignant classification layer
-- [[Explainability]] — Grad-CAM and XAI methods
+- [[Segmentation]] — U-Net variants, loss functions, normalization
+- [[Classification]] — Multi-task patterns, classification head design
+- [[Explainability]] — Grad-CAM, Seg-Grad-CAM, heatmap interpretation
 
-## Notes Index
-- 
+## Notes
+Architecture notes here are modality-agnostic — the patterns apply across medical imaging tasks. Breast-specific architectural observations are in [[Breast_Tumor]].
+
+See current architectural thinking → [[Architecture_Considerations]]
+
+## Sources
+→ [[Open_Sourced_Sources]]

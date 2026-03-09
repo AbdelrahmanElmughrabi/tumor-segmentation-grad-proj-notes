@@ -8,6 +8,7 @@ updated: 2026-03-01
 This is the root of the vault. Every major section is one link away.
 
 ## Vault Sections
+- [[Research_Landscape]] — High-level summary of the research state (Start Here)
 - [[Raw_Research]] — Personal reading notes (WIP, not yet verified)
 - [[Knowledge_Base]] — Promoted, agreed-upon shared knowledge
 - [[Lab]] — Brainstorming, architecture decisions, canvases
