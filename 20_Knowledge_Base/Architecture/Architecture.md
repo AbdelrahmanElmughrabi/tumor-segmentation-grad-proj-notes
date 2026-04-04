@@ -18,3 +18,17 @@ See current architectural thinking → [[Architecture_Considerations]]
 
 ## Sources
 → [[Open_Sourced_Sources]]
+
+## Finalized Architecture (March 2026)
+
+After CBIS-DDSM specific research and SDD design phase, the following stack was finalized:
+
+- **Encoder:** EfficientNet-B0 (pretrained ImageNet, shared across both tasks)
+- **Segmentation decoder:** UNet++ with nested dense skip connections
+- **Classification head:** CBAM + GAP → Dense(256) → Dropout(0.5) → Dense(1) → Sigmoid
+- **Explainability:** Grad-CAM++ hooked to final encoder conv layer (post-inference)
+- **Framework:** PyTorch + MONAI
+- **Dataset:** CBIS-DDSM, patient-level 80/20 split, batch 16 at 224x224
+
+See full system design → [[System_Design_Overview]]
+See full decision reasoning → [[Architecture_Decision_Log]]

@@ -12,7 +12,7 @@ Known gaps in our understanding of the 2D mammography pipeline. Prioritized by h
 
 **GAP-01: No open source combined pipeline found**
 No public project combines segmentation + classification + Grad-CAM in a single end-to-end pipeline specifically for 2D mammography. The closest match (caumente/multi_task_breast_cancer) does segmentation + classification on ultrasound, not mammography.
-- Status: 🔴 Open
+- Status: ✅ Closed — designed in SDD March 2026. See [[System_Design_Overview]]
 - Why it matters: we are building something that doesn't exist cleanly in open source — confirms novelty but means no direct reference implementation
 
 **GAP-02: Mammography-specific Grad-CAM integration**
@@ -41,3 +41,20 @@ DBT compute requirements not benchmarked for our specific hardware budget. TomoL
 
 ## Resolved Gaps
 *(Move closed gaps here with ✅ and link to resolving note)*
+
+## Implementation Phase Gaps (Opened March 2026)
+
+**GAP-07: Loss weight ratio not empirically validated**
+The 0.7/0.3 Dice/BCE split is an informed estimate. Must be tuned during training.
+- Status: 🔴 Open
+- Action: Test 0.8/0.2 and 0.6/0.4 as alternatives during training phase
+
+**GAP-08: MGT score achievability unknown for our architecture**
+Target MGT > 0.80 set based on YOLOv8 benchmark (0.86). Not yet validated for EfficientNet-B0 + UNet++.
+- Status: 🔴 Open
+- Action: Validate post-training against CBIS-DDSM radiologist masks
+
+**GAP-09: Input resolution tradeoff unresolved**
+224x224 chosen for compute efficiency but may lose fine-grained mass boundary detail vs 512x512.
+- Status: 🔴 Open
+- Action: Run ablation after baseline model is trained

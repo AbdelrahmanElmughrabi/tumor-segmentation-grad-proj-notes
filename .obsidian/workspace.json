@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "30_Lab/Architecture_Decisions/Architecture_Considerations.md",
+                "file": "Note_Template.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Architecture_Considerations"
+              "title": "Note_Template"
             }
           }
         ]
@@ -182,12 +182,17 @@
   },
   "active": "251fd6b8e5a9f526",
   "lastOpenFiles": [
+    "20_Knowledge_Base/Open_Sourced_Sources.md",
+    "20_Knowledge_Base/Open_Sourced_Literature_Map.md",
+    "20_Knowledge_Base/Knowledge_Base.md",
+    "Architecture_Decision_Log.md",
     "30_Lab/Architecture_Decisions/Architecture_Decisions.md",
+    "20_Knowledge_Base/Architecture/Architecture.md",
+    "30_Lab/Architecture_Decisions/System_Design_Overview.md",
     "30_Lab/Architecture_Decisions/Pipeline_Decisions_CBIS_DDSM.md",
+    "30_Lab/Architecture_Decisions/Architecture_Considerations.md",
     "Submissions/RAD_20COMP1015_21SOFT1070 (1).pdf",
     "Submissions/2.SDD_TEMPLATE_FOR_COMP_SOFT4902_4912.docx (1).pdf",
-    "30_Lab/Architecture_Decisions/Architecture_Considerations.md",
-    "20_Knowledge_Base/Architecture/Architecture.md",
     "Submissions",
     "20_Knowledge_Base/Architecture/Classification/MultiTask_Patterns.md",
     "30_Lab/Brainstorm/Brainstorm.md",
@@ -201,7 +206,6 @@
     "Untitled.base",
     "Untitled 1.canvas",
     "Untitled 2.canvas",
-    "20_Knowledge_Base/Open_Sourced_Sources.md",
     "10_Raw_Research/Dilara/Desktop App.md",
     "10_Raw_Research/Raw_Research.md",
     "20_Knowledge_Base/Breast_Tumor/Research_Landscape.md",
@@ -212,9 +216,6 @@
     "20_Knowledge_Base/Desktop_App/Desktop_App.md",
     "20_Knowledge_Base/Data_Pipeline/Preprocessing.md",
     "20_Knowledge_Base/Data_Pipeline/Data_Pipeline.md",
-    "20_Knowledge_Base/Data_Pipeline/Data_Formats.md",
-    "20_Knowledge_Base/Clinical/Clinical.md",
-    "20_Knowledge_Base/Architecture/Segmentation/UNet_Variants_3D.md",
     "20_Knowledge_Base/Gaps",
     "20_Knowledge_Base/Breast_Tumor/Breast_3D",
     "20_Knowledge_Base/Breast_Tumor/Breast_2D",

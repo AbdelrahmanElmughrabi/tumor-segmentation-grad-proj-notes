@@ -47,3 +47,21 @@ Tumor pixels are vastly outnumbered by background:
 
 ## Sources
 → [[Open_Sourced_Sources]]
+
+## Finalized Preprocessing Pipeline — CBIS-DDSM (March 2026)
+
+### From Design Phase
+
+Final pipeline order validated against CBIS-DDSM specific research:
+
+DICOM/PNG load → morphological opening (artifact/label removal) → Otsu + region-growing pectoral muscle mask → CLAHE (8x8 tiles, clip limit) → zero-pad to square → resize 224x224 → Z-score normalize
+
+**Implementation:** MONAI transforms pipeline — all geometric operations applied jointly to image and mask to prevent spatial misalignment.
+
+**Key validated numbers:**
+- CLAHE: accuracy gain 91.1% → 99.4% on CBIS-DDSM (EfficientNetV2)
+- Pectoral removal: 96% success rate on MLO views
+
+**Critical rule:** Never apply geometric transforms to image without applying the same transform to the mask. MONAI handles this automatically.
+
+See → [[System_Design_Overview]]

@@ -19,4 +19,5 @@ Parent: [[Lab]]
 
 ## Notes Index
 - [[Pipeline_Decisions_CBIS_DDSM]] — Full detailed log for the Mammography AI Pipeline.
- 
+- [[System_Design_Overview]] — Compressed SDD reference, subsystem interfaces, pipeline flow
+- [[Architecture_Decision_Log]] — Full detailed log with evidence and alternatives
