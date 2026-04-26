@@ -27,6 +27,20 @@
         "a": 1,
         "rgb": 16722217
       }
+    },
+    {
+      "query": "EXP0",
+      "color": {
+        "a": 1,
+        "rgb": 5431378
+      }
+    },
+    {
+      "query": "file:50_Experiments",
+      "color": {
+        "a": 1,
+        "rgb": 5431473
+      }
     }
   ],
   "collapse-display": true,
@@ -34,11 +48,11 @@
   "textFadeMultiplier": 0,
   "nodeSizeMultiplier": 1,
   "lineSizeMultiplier": 1,
-  "collapse-forces": true,
+  "collapse-forces": false,
   "centerStrength": 0.518713248970312,
   "repelStrength": 10,
   "linkStrength": 1,
-  "linkDistance": 250,
-  "scale": 0.5087618855792722,
-  "close": true
+  "linkDistance": 30,
+  "scale": 0.5087618855792863,
+  "close": false
 }

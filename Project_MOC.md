@@ -13,6 +13,7 @@ This is the root of the vault. Every major section is one link away.
 - [[Knowledge_Base]] — Promoted, agreed-upon shared knowledge
 - [[Lab]] — Brainstorming, architecture decisions, canvases
 - [[Management]] — Timeline, tasks, meetings
+- [[50_Experiments]] — Model runs, data archaeology, and validation experiments
 
 ## Open Questions
 → [[Open_Questions]]

@@ -1,5 +1,5 @@
 ---
-type: gaps
+type: nexus
 ---
 
 # Mammography Gaps
