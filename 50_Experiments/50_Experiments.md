@@ -18,6 +18,22 @@ This folder contains the technical execution of the project, organized into sequ
 | [[Experiment_Series_02]] | 2026-03 | Mixed Perspective (Crops) | Identified Mask Alignment Trap | ✅ |
 | [[Experiment_Series_03]] | 2026-04 | Mass-Only Optimization | Dice doubled (0.50); overfitting closed | ✅ |
 | [[Experiment_Series_04]] | 2026-04 | Staged Training | Halved False Positives; high-res Grad-CAM | ✅ |
+| [[Experiment_Series_05]] | 2026-05 | Optimization & Recovery | Overfitting gap 0.47 -> 0.07; Dice 0.506 | ✅ |
+
+## Key Strategic Insights
+| Insight | Evidence |
+| :--- | :--- |
+| **Localization is the bottleneck** | Crops achieve Dice ~0.90; full images cap at ~0.50 |
+| **Dataset composition matters** | Mass-only filter: +278 Dice points (largest single gain) |
+| **Overfitting was the early killer** | Baseline gap 0.47 -> Series 05 gap 0.07 (Solved) |
+| **Metrics ≠ visual quality** | Run 5.2 has lower AUC but better heatmaps than baseline |
+| **Augmentation stabilizes** | Series 05 maintains Dice while controlling overfitting |
+
+## Current Performance Status
+* **Best Segmentation**: Dice 0.506 (Runs 5.2 & 5.3)
+* **Best Classification**: AUC 0.783 (Series 04)
+* **Best Generalization**: Run 5.3 (minimal overfitting)
+* **Unresolved**: Segmentation ceiling remains below 0.75 target (Localization Bottleneck).
 
 ## Workflow
 1. **Data Prep** (EXP01) → **Standardization** (EXP02) → **Model Build** (EXP03)

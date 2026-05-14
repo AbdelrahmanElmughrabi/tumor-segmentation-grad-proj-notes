@@ -1,0 +1,387 @@
+Based on the `EXP-01` notebook we just built, running that script on your CSV will produce these specific outcomes:
+
+1. **Filtered Dataset:** All uncertain BI-RADS 3 cases will be removed.
+2. **Binary Labels:** A new `Label` column is added (`MALIGNANT` = 1, `BENIGN` = 0).
+3. **Leakage-Free Splits:** Patients are strictly assigned to a 70% Train, 10% Val, or 20% Test split (with an automated check to guarantee zero overlap).
+4. **Visual Alignment Check:** A plot displaying 3 pairs of 16-bit Full Mammograms and ROI masks side-by-side to verify spatial alignment.
+5. **Final Clean CSV:** Saves the ready-to-train metadata file as `CBIS_Master_Index_Clean.csv`.
+
+Expected outcomes of EXP-02:
+Confirmed technical outputs:
+
+Output tensor shape verified: (1, 512, 512) float32
+No NaN values in output
+Min/max/mean printed — confirms Z-score normalization worked
+ROI mask confirmed binary and spatially aligned after transforms
+
+Visual confirmation:
+
+Pectoral muscle visibly suppressed in preprocessed vs original comparison
+CLAHE visibly enhancing lesion contrast — tumor region should appear more distinct
+ROI mask correctly overlaid on preprocessed image — no spatial drift
+
+Decisions it unlocks:
+
+Confirms CLAHE tile size (8×8) is appropriate or needs adjustment
+Confirms pectoral masking is working on both CC and MLO views
+Confirms the lateral flip correctly standardizes LEFT/RIGHT orientation
+Gives you a visual baseline to compare against post-training Grad-CAM++ heatmaps
+
+What it feeds into:
+
+EXP-03 uses this exact transform chain as the preprocessing step before the skeleton model forward pass
+The MONAI transforms get wrapped into the PyTorch DataLoader in EXP-03
+
+If any of these fail visually — pectoral still visible, CLAHE over-amplifying noise, mask misaligned — you fix it here before touching the model.
+
+
+
+EXP-02 is essentially a image cleaning and preparation pipeline before the model sees any data.
+Here's what each step does in plain terms:
+Flip — some mammograms have the breast on the right side, others on the left. We flip the right ones so every image has the breast facing the same direction. We flip the mask too so it stays aligned.
+Pectoral muscle removal — in MLO view mammograms there's a bright triangular muscle in the corner (the pectoral muscle) that has nothing to do with tumors. If we leave it in, the model might learn to associate that bright region with malignancy. We detect it and set it to black.
+CLAHE — the raw 16-bit mammograms have subtle contrast differences that are hard to see. CLAHE is a contrast enhancement technique that makes the tumor region more visually distinct without over-brightening the whole image. Think of it like adjusting the local brightness in small 8×8 tiles across the image.
+Z-score normalization — converts pixel values to a standard scale (mean=0, std=1) so the model doesn't get confused by raw pixel intensity differences between different scanners or patients. Only applied to the actual breast tissue, not the black background.
+Output — a clean (1, 512, 512) float32 tensor ready to enter the EfficientNet-B0 encoder, with the ROI mask still perfectly aligned to it.
+That's it — clean input in, model-ready tensor out.
+
+
+
+EXP-03 Plan — Skeleton ModelGoal: wire the full architecture and confirm it produces the correct output shapes with a dummy forward pass. No training, no real data pipeline yet.What needs to happen:
+
+Define the shared EfficientNet-B0 encoder
+Attach the UNet++ segmentation decoder
+Attach the CBAM classification head
+Run a dummy forward pass with a random tensor (batch=2, 1, 512, 512)
+Confirm outputs:
+
+Segmentation mask: (2, 1, 512, 512)
+Classification score: (2, 1) — single sigmoid output
+
+
+Print parameter count — confirm it's reasonable (~9-15M)
+Confirm no shape errors or crashes
+
+
+
+Outcomes of EXP-03:
+
+Shared EfficientNet-B0 encoder successfully initialized with ImageNet pretrained weights ✅
+UNet++ decoder correctly attached and producing segmentation mask (2, 1, 512, 512) ✅
+CBAM classification head correctly attached to bottleneck and producing score (2, 1) ✅
+Single forward pass confirmed — one input, two outputs simultaneously ✅
+6,160,976 trainable parameters — within expected range ✅
+Zero NaN values in both outputs ✅
+
+
+What we did in EXP-03 in simple words:
+Think of EXP-03 as assembling the machine before turning it on for real. We built the full AI model by connecting three parts together: the shared EfficientNet-B0 encoder which acts as the brain that reads the mammogram, the UNet++ decoder which takes what the brain learned and draws where the tumor is, and the CBAM classification head which takes the same brain output and decides whether the tumor is benign or malignant.
+We then fed the model a fake dummy image — just random numbers in the right shape — to confirm all three parts are correctly wired together and produce outputs in the exact shapes we need. We didn't train anything, we didn't use real data. We just confirmed the plumbing works before turning on the water.
+
+
+**EXP-04 Plan — Mini Training Run**
+
+Goal: confirm the full pipeline works end-to-end with real data and a real loss function before committing to a full training run. Not about accuracy — about stability.
+
+**What needs to happen:**
+1. Build a PyTorch Dataset class that reads `CBIS_Master_Index_Clean.csv` and loads `(FULL, ROI, label)` triplets
+2. Apply the EXP-02 preprocessing pipeline to each sample on-the-fly
+3. Build a DataLoader with `batch_size=4`
+4. Initialize the MTL model from EXP-03
+5. Define the combined loss: `0.7 × Dice Loss + 0.3 × BCE`
+6. Run a small training loop — 100 samples, 3 epochs only
+7. Print loss per epoch — confirm loss is decreasing
+8. Confirm no NaN losses, no shape errors, no crashes
+
+**Success criteria:**
+- Loss decreases across 3 epochs
+- No NaN values anywhere
+- No shape mismatches between model output and ground truth
+- Training completes without crashing
+
+---
+
+**Prompt:**
+
+**"You have full access to my Obsidian vault and understand the proposed architecture. I need you to write `EXP-04_mini_training_run.py` as a Kaggle notebook.**
+
+**Context:**
+- `CBIS_Master_Index_Clean.csv` is the input with columns: `Full_Path`, `ROI_Path`, `Label`, `Patient_Split`, `True_Patient_ID`
+- Images are 512×512 16-bit PNGs
+- The MTL model from EXP-03 is the architecture — shared EfficientNet-B0 encoder, UNet++ decoder, CBAM classification head
+- The preprocessing pipeline from EXP-02 must be applied on-the-fly inside the Dataset class
+- Framework: PyTorch + MONAI
+
+**The script must:**
+1. Define a `CBISDDSMDataset` PyTorch Dataset class that:
+   - Reads the clean CSV
+   - Filters for `Patient_Split == 'Train'` and takes only the first 100 rows for this mini run
+   - Loads FULL and ROI images using `cv2.IMREAD_UNCHANGED`
+   - Applies the full EXP-02 preprocessing transform chain on-the-fly
+   - Returns `(image_tensor, mask_tensor, label_tensor)` triplets
+2. Build a DataLoader with `batch_size=4`, `shuffle=True`
+3. Define the MTL model from EXP-03 exactly as implemented
+4. Define the combined loss function: `total_loss = 0.7 × Dice Loss + 0.3 × BCE Loss`
+   - Use MONAI's `DiceLoss` for segmentation
+   - Use PyTorch's `BCELoss` for classification
+5. Run a training loop for 3 epochs over the 100 samples
+6. Print total loss, Dice loss, and BCE loss separately per epoch
+7. After training, confirm loss decreased from epoch 1 to epoch 3
+8. Use GPU if available, CPU otherwise
+
+**Important notes:**
+- Set random seed 42 everywhere for reproducibility
+- The Dice loss expects the segmentation output and mask to both be in range 0-1 — apply sigmoid to segmentation output before computing Dice loss
+- BCE loss expects the classification score already in 0-1 range — sigmoid is already in the model
+- No validation loop, no metric computation, no model saving — training stability check only"**
+
+
+**Outcomes of EXP-04:**
+- Full pipeline runs end-to-end without crashes ✅
+- Data loading, preprocessing, and model forward pass all connect correctly ✅
+- Combined loss computed correctly: `0.7 × Dice + 0.3 × BCE` ✅
+- Total loss decreased across 3 epochs: 0.8927 → 0.8549 → 0.8215 ✅
+- BCE loss dropping fast: 0.6517 → 0.4265 — classification branch learning ✅
+- Dice loss high but expected on 100 samples / 3 epochs ✅
+- No NaN values anywhere in the training loop ✅
+- GPU confirmed working ✅
+
+---
+
+**What we did in EXP-04 in simple words:**
+
+Think of EXP-04 as a test drive before a long journey. We took all the pieces built in the previous experiments — the clean dataset from EXP-01, the preprocessing pipeline from EXP-02, and the model architecture from EXP-03 — and connected them together into a real working training loop for the first time.
+
+We deliberately kept it small — only 100 images and 3 epochs — because the goal wasn't to get good results, it was to confirm nothing breaks. We wanted to see the loss go down, even slightly, just to prove the model is actually learning something and the gradients are flowing correctly through both the segmentation and classification branches simultaneously.
+
+It worked. The machine runs. Now EXP-05 is where we actually drive it to the destination — full dataset, real training, real numbers.
+
+
+
+
+
+**Outcomes of EXP-05:**
+- Training completed with early stopping at epoch 20 ✅
+- Training loss decreased consistently: 0.8797 → 0.4206 ✅
+- Best model saved at epoch 10 (V_Dice: 0.2079) ✅
+- Test Dice: 0.2280 — below target of 0.75 ❌
+- Test AUC: 0.7832 — below target of 0.85 but learning ⚠️
+- Test Accuracy: 0.6930 ⚠️
+- Significant overfitting detected — train loss 0.42 vs val loss 0.89 ❌
+- Classification branch learning (AUC 0.78) but segmentation branch struggling (Dice 0.22) ❌
+- 204/256 malignant cases correctly identified, 52 missed ⚠️
+- 191/314 benign cases correctly identified, 123 over-flagged as malignant ⚠️
+
+---
+
+**What we did in EXP-05 in simple words:**
+
+EXP-05 was the real exam after all the preparation. We took the fully built and verified pipeline — clean data, preprocessing, and the complete MTL model — and trained it on the entire dataset for the first time. The model ran for 20 epochs before early stopping kicked in, meaning it stopped improving on the validation set.
+
+The results tell a mixed story. The classification branch — deciding benign vs malignant — showed decent learning with an AUC of 0.78, meaning it can distinguish between the two classes reasonably well. However the segmentation branch — drawing where the tumor actually is — performed poorly with a Dice score of only 0.22, far below the 0.75 target. The model also showed clear overfitting, meaning it learned the training data too well but failed to generalize.
+
+This is not a failure — it's exactly the information EXP-05 is designed to produce. We now have real numbers to make informed decisions about what to fix next, whether that's separating mass and calcification cases, adding stronger regularization, adjusting loss weights, or other architectural changes.
+
+
+
+
+
+
+2nd run:
+
+other thoughts on adding crops: THE SECOND EXPERIMENTS BY ADDING THE CROPPED IMAGES TO THE TRAINING SET
+Running a "Crop-Only" baseline is a brilliant next step. It isolates the model's ability to analyze lesion texture and shape without the massive bottleneck of having to search the entire breast first. 
+
+If your model scores high on crops but low on full images, you instantly know your problem is *localization*, not *classification*.
+
+However, moving to a Crop-Only pipeline triggers the **Mask Alignment Trap** we discussed earlier. Here are my thoughts and the exact plan to execute this safely across your experiments:
+
+### The Mask Alignment Trap (Why we can't just swap paths)
+The images in your `cropped/` folder are tightly zoomed in on the tumor. But your `ROI_Path` masks are mapped to the *full* 512x512 breast coordinates. 
+* If you load a zoomed-in crop image, but pair it with a zoomed-out full mask, the white pixels in the mask will not line up with the tumor in the image.
+* **Result:** Your Dice loss will be 0.0, the model will get utterly confused, and training will collapse silently.
+
+### The Bulletproof Solution: Dynamic Bounding Box Cropping
+Instead of trusting the `cropped/` folder images (which lack matching cropped masks in your CSV), we will **generate perfect crops on the fly** inside your PyTorch `Dataset`. 
+
+We will load the perfectly aligned `FULL` image and `ROI` mask, use OpenCV to find the exact bounding box of the tumor in the mask, and then crop *both* tensors simultaneously before resizing them to 512x512. This guarantees 100% spatial alignment.
+
+### How this changes your pipeline:
+
+1. **EXP-01 (Data):** No changes needed to the CSV! We still use `Full_Path` and `ROI_Path` as our source of truth.
+2. **EXP-02 (Transforms):** **Remove** the `PectoralRemovalMLOd` transform. If you run a flood-fill algorithm on a tightly cropped tumor, it will likely delete the tumor data. 
+3. **EXP-03 (Model):** No changes. 
+4. **EXP-04 & 05 (Training):** We update the `CBISDDSMDataset` class. Inside the `__getitem__` function, we will add 4 lines of OpenCV code to find the bounding box of the `roi` mask, crop the `img` and `roi` arrays, and pad/resize them to 512x512.
+5. **EXP-06 (Explainability):** No code changes, but expect your MGT score to naturally increase, since the tumor now occupies the majority of the image frame.
+
+**The Plan:**
+If you agree with the Dynamic Cropping approach, we can start by writing the updated `EXP-04/05` PyTorch Dataset class. Do you want me to show you the bounding box cropping logic, or do you want to verify the misalignment visually in EXP-01 first?
+
+
+other problems: 
+hmm that shows that the model doesn't link the ideas of different perspectives correct? cuz thats what I need to do later maybe, not sure
+
+You are exactly right. The current EfficientNet-B0 architecture processes every image completely independently.
+
+If you put both the Full image and the Cropped image into the training dataset, the model just sees them as two separate, unrelated examples. It does not "remember" the Full image when looking at the Cropped image to make a joint decision.
+
+What you are describing for the future is called a Two-Stream or Multi-Scale Architecture.
+
+To actually link the perspectives, you would need to change the PyTorch graph (in EXP-03) to accept two inputs simultaneously:
+
+Input 1 (Full Image) goes through Encoder A to learn global context (where is the tumor in the breast?).
+
+Input 2 (Cropped Image) goes through Encoder B to learn local texture (are the edges spiky or smooth?).
+
+The Link: You concatenate the feature maps from both encoders together, and pass that combined tensor into your CBAM/Classification head.
+
+For now, your current plan is the correct scientific approach. Get the baseline numbers for the Full images. Get the baseline numbers for the Cropped images.
+
+Once you have those two sets of numbers, you will know exactly if it is worth the computational cost to build a Two-Stream network later.
+
+Do you want to proceed with editing EXP-04/05 to run the Crop-only baseline, or do you want to test the EXP-01 visualization triplet first?
+
+
+
+
+
+Changes on exp04 
+Here is the reality of the math and how we execute your plan. 
+
+You cannot literally "overlay" a cropped image onto a full image for this model. EfficientNet-B0 expects a `(1, 512, 512)` tensor. If you paste a zoomed-in crop on top of a zoomed-out breast, the spatial scales clash, and the convolutions will learn garbage features.
+
+To do what you want—using the existing cropped images and maintaining the link without changing the model architecture—we use a **Mixed Dataset Strategy** in EXP-04.
+
+### The Plan for EXP-04
+
+We will rewrite the PyTorch `Dataset` class so it doubles your training data on the fly. For every patient row in your CSV, the DataLoader will generate two independent training passes:
+
+1.  **Pass 1 (The Context):** It loads `Full_Path` and `ROI_Path`, tags it as `"FULL"`, and runs it through the pipeline (muscle removed, enhanced). 
+2.  **Pass 2 (The Detail):** It loads `Crop_Path` and `ROI_Path`, tags it as `"CROP"`, and runs it through the pipeline (muscle bypassed, enhanced).
+
+The model processes them sequentially. Over thousands of batches, it learns to associate the global shape of the breast (from the full images) and the detailed texture of the lesion (from the crops).
+
+### The Technical Trap (Do Not Ignore This)
+Since you explicitly want to use the existing `Crop_Path` files instead of generating new crops, you will run into the **Mask Alignment Failure** we visualized earlier. 
+
+In Pass 2, you are pairing a tightly zoomed-in image (`Crop_Path`) with a zoomed-out mask (`ROI_Path`). The white pixels in the mask will not be covering the tumor in the cropped image. 
+* Your classification (AUC) might learn something from the crop.
+* Your segmentation (Dice Loss) will immediately collapse to 0.0 because the mask and the image do not align.
+
+If you are fine with the Dice score collapsing just to "observe the numbers" and test the pipeline's stability as you mentioned earlier, we can write EXP-04 to execute this exact mixed logic right now. Tell me if you want the EXP-04 code.
+
+
+
+full summary of the current changes (where are we now) 
+
+
+Here's a refined version:
+
+**EXP-01** — Linked `Crop_Path` to each patient row in the master CSV alongside `Full_Path` and `ROI_Path`. Added triplet visualization (Full | ROI | Crop) to verify alignment visually.
+
+**EXP-02** — Modified preprocessing pipeline to handle both perspectives. Full images get pectoral muscle removal. Crop images bypass it via `image_type="CROP"` tag to avoid erasing the tumor. Both still get CLAHE + Z-score normalization.
+
+**EXP-03** — No changes. Architecture confirmed compatible with both input perspectives as-is.
+
+**EXP-04** — Rewrote the Dataset class into `MixedCBISDDSMDataset` which doubles training data on-the-fly. Every patient row yields two passes: Full image and Crop image, both linked to the same ROI mask and label.
+
+**EXP-05** — Full training run with the mixed dataset. Results: Dice 0.137, AUC 0.751, Accuracy 0.668 — all worse than the original baseline (Dice 0.228, AUC 0.783, Accuracy 0.693).
+
+**Key finding** — The drop in all metrics confirmed that pairing crop images with full-scale ROI masks actively poisons the segmentation gradients every other batch, dragging the shared encoder down and hurting classification along with it. The fix requires linking crop-specific ROI masks (`Crop_ROI_Path`) in EXP-01 before the mixed strategy can be tested properly.
+
+
+still it'll be improved with a new plan
+
+
+
+
+
+
+3rd run: 
+
+
+
+**Changes Summary:**
+- Mass-only filter added in EXP-01 — dropped all calcification cases, kept masses only
+- Augmentation added to training pipeline only — random horizontal flip + rotation up to 15°
+- Focal Loss (γ=2.0, α=0.25) replaced BCE for classification branch
+- Grad-CAM target layer fixed — hooked to `blocks[-1][-1]` instead of `blocks[-1]`
+
+**Results vs Baseline:**
+| | Baseline | Third Run |
+|---|---|---|
+| Dice | 0.228 | 0.506 |
+| AUC | 0.783 | 0.757 |
+| Overfitting gap | 0.47 | 0.07 |
+
+---
+
+**GitHub commit message:**
+
+```
+EXP-05/06 third run: mass-only filter, augmentation, focal loss, gradcam fix
+
+- Filter to mass cases only (drop calcifications) — Dice 0.228 → 0.506
+- Add RandFlip + RandRotate to train pipeline only
+- Replace BCEWithLogitsLoss with BinaryFocalLoss (α=0.25, γ=2.0)
+- Fix Grad-CAM++ target layer from blocks[-1] to blocks[-1][-1]
+- Overfitting gap reduced significantly (0.47 → 0.07)
+- AUC slightly down (0.783 → 0.757), classification branch needs further work
+```
+
+
+
+
+
+4th run
+
+
+
+
+**Changes Summary — Fourth Run:**
+
+- **Tversky Loss** replaced Dice Loss for segmentation branch (α=0.3, β=0.7) — penalizes missed tumors (false negatives) harder than false positives. Chosen because at Dice 0.506 the model is still missing too many tumor boundaries, and Tversky's asymmetric penalty directly targets that.
+- **Staged Training** — Phase 1 (epochs 1–10): classification branch fully frozen, encoder trains on segmentation only using Tversky loss alone. Phase 2 (epoch 11+): classification branch unfreezes, combined loss `0.7 × Tversky + 0.3 × Focal` resumes. Patience counter reset at Phase 2 transition to give classification fair training time.
+- **Grad-CAM target layer** moved from `blocks[-1][-1]` to `blocks[-2][-1]` — earlier encoder layer has higher spatial resolution, giving Grad-CAM more precise localization signal. Previous layer was too spatially compressed to produce meaningful heatmaps.
+
+**Thought process:**
+
+Third run doubled Dice (0.228 → 0.506) and nearly eliminated overfitting — augmentation and mass-only filter did their job. But two problems remained: Dice still below 0.75 target, and AUC dropped slightly to 0.757. Root diagnosis was that the shared encoder was being pulled in two directions simultaneously from the start — classification gradients interfering before the encoder had learned proper spatial features. Staged training forces the encoder to develop spatially meaningful representations first, then lets classification build on top of that foundation rather than fighting against it. Tversky was added on top as the natural next step now that the baseline was clean enough to isolate its effect.
+
+---
+
+**GitHub commit message:**
+```
+EXP-05/06 fourth run: staged training, tversky loss, gradcam layer fix
+
+- Staged training: freeze cls branch epochs 1-10 (seg only), unfreeze epoch 11+
+- Replace DiceLoss with TverskyLoss (α=0.3, β=0.7) — penalize missed tumors harder
+- Reset patience counter at Phase 2 transition
+- Fix Grad-CAM target layer to blocks[-2][-1] for better spatial resolution
+- Goal: push Dice above 0.75, recover AUC, improve MGT from near-zero
+```
+
+
+Compared to third run:
+
+| | 3rd Run | 4th Run | |
+|---|---|---|---|
+| Dice | 0.506 | 0.524 | ↑ small |
+| AUC | 0.757 | 0.780 | ↑ recovering |
+| Accuracy | 0.674 | 0.697 | ↑ small |
+| False Positives | 56 | 28 | ↑ halved ✅ |
+| False Negatives | 29 | 51 | ↓ worse ⚠️ |
+
+**The good** — AUC recovering, false positives halved (staged training + Tversky working on classification), heatmaps visibly better meaning the layer fix was the right call.
+
+**The concern** — false negatives went up (29 → 51). Model is now more conservative — missing more real tumors. Tversky α=0.3, β=0.7 was supposed to penalize false negatives harder but the confusion matrix suggests classification is swinging the other way. Dice barely moved (0.506 → 0.524).
+
+**Honest read** — the model is improving but slowly. Dice is plateauing. The segmentation branch might be hitting a ceiling on full 512×512 images regardless of loss function. The geometry problem we discussed earlier — tumor occupying 2-5% of the image — might be the actual ceiling now.
+
+
+
+
+
+
+
+
