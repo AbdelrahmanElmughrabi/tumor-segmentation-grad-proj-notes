@@ -158,7 +158,8 @@
               "title": "Outline"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -178,8 +179,11 @@
   },
   "active": "251fd6b8e5a9f526",
   "lastOpenFiles": [
-    "50_Experiments/50_Experiments.md",
+    "10_Raw_Research/Dilara/Desktop App.md",
+    "Project_MOC.md",
+    "Untitled.base",
     "50_Experiments/Experiment_Series_05/Experiment_Series_05.md",
+    "50_Experiments/50_Experiments.md",
     "50_Experiments/Experiment_Series_05/Run_5.3_Optimized/EXP04_Run5.3.md",
     "50_Experiments/Experiment_Series_05/Run_5.3_Optimized/EXP06_Run5.3.md",
     "50_Experiments/Experiment_Series_05/Run_5.3_Optimized/EXP05_Run5.3.md",
@@ -203,11 +207,8 @@
     "50_Experiments/Experiment_Series_01/EXP02_01.md",
     "50_Experiments/Experiment_Series_01/EXP01_01.md",
     "2026-04-04.md",
-    "Project_MOC.md",
-    "Untitled.base",
     "20_Knowledge_Base/Gaps/Mammography_Gaps.md",
     "50_Experiments.md",
-    "50_Experiments/Experiments.md",
     "50_Experiments/Experiment_Series_04",
     "50_Experiments/Experiment_Series_02",
     "50_Experiments/Experiment_Series_03",
